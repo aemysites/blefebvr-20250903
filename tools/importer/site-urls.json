@@ -2,7 +2,9 @@
   "originUrl": "https://main--aem-boilerplate--adobe.aem.page/",
   "urls": [
     {
-      "url": "https://main--aem-boilerplate--adobe.aem.page/"
+      "url": "https://main--aem-boilerplate--adobe.aem.page/",
+      "id": "3e001f8e061719b5b648a04afeb2d041bf93d5fd",
+      "targetPath": "/"
     }
   ]
 }
