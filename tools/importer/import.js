@@ -28,6 +28,7 @@ import {
   mergeInventory,
 } from './import.utils.js';
 
+// Import script
 const parsers = {
   metadata: metadataParser,
   columns3: columns3Parser,
