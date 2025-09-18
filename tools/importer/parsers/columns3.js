@@ -1,37 +1,28 @@
 /* global WebImporter */
 export default function parse(element, { document }) {
-  if (!element) return;
-
-  // Find all immediate child rows of the columns block
-  const rows = Array.from(element.querySelectorAll(':scope > div'));
-  if (rows.length === 0) return;
-
-  // Block header row as required
+  // Always use the target block name as the header row
   const headerRow = ['Columns (columns3)'];
-  const tableRows = [];
 
-  rows.forEach((row) => {
-    // Each row contains two columns
-    const cols = Array.from(row.querySelectorAll(':scope > div'));
-    if (cols.length === 0) return;
-    const cells = cols.map((col) => {
-      // If column is just an image wrapper, use the image/picture directly
-      const imgCol = col.querySelector(':scope > .columns-img-col');
-      if (imgCol && col.children.length === 1) {
-        return imgCol;
-      }
-      // Otherwise, return the column itself (preserves all text, lists, buttons)
-      return col;
-    });
-    tableRows.push(cells);
-  });
+  // Find the main .columns block
+  const columnsBlock = element.querySelector('.columns.block');
+  if (!columnsBlock) return;
 
-  // Create the table with block header and rows
-  const table = WebImporter.DOMUtils.createTable([
-    headerRow,
-    ...tableRows
-  ], document);
+  // Get all direct children divs (each represents a row in the columns block)
+  const rows = Array.from(columnsBlock.children);
+  if (rows.length < 2) return;
 
-  // Replace the original element with the table
+  // First row: left (text+ul+button), right (image)
+  const firstRowCells = [rows[0], rows[1]];
+  // Second row: left (image), right (text+button)
+  const secondRowCells = [rows[2], rows[3]];
+
+  // Defensive: ensure both cells exist for each row
+  if (!firstRowCells[0] || !firstRowCells[1] || !secondRowCells[0] || !secondRowCells[1]) return;
+
+  // Build table rows
+  const tableRows = [headerRow, firstRowCells, secondRowCells];
+
+  // Create the table block
+  const table = WebImporter.DOMUtils.createTable(tableRows, document);
   element.replaceWith(table);
 }

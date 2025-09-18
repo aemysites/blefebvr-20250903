@@ -1,31 +1,56 @@
 /* global WebImporter */
 export default function parse(element, { document }) {
-  // Defensive: find the <ul> containing the cards
-  const ul = element.querySelector('ul');
-  if (!ul) return;
+  // Find the correct cards block
+  let cardsBlock = element;
+  if (!cardsBlock.classList.contains('cards')) {
+    cardsBlock = element.querySelector('.cards.block');
+  }
+  if (!cardsBlock) return;
 
-  // Prepare the table header
+  const ul = cardsBlock.querySelector('ul');
+  if (!ul) return;
+  const cards = Array.from(ul.children);
+
+  // Header row per spec
   const headerRow = ['Cards (cards4)'];
   const rows = [headerRow];
 
-  // Get all <li> (cards)
-  const cards = ul.querySelectorAll(':scope > li');
   cards.forEach((li) => {
-    // Defensive: find image container and body container
+    // Image cell: reference the <picture> element directly
     const imgDiv = li.querySelector('.cards-card-image');
+    let imageCell = '';
+    if (imgDiv) {
+      const picture = imgDiv.querySelector('picture');
+      if (picture) imageCell = picture;
+      else {
+        const img = imgDiv.querySelector('img');
+        if (img) imageCell = img;
+      }
+    }
+
+    // Text cell: preserve all text content, semantic structure
     const bodyDiv = li.querySelector('.cards-card-body');
+    let textCell = '';
+    if (bodyDiv) {
+      // Use all children (usually <p>), preserve <strong> for heading
+      const fragments = [];
+      Array.from(bodyDiv.children).forEach((child) => {
+        // Clone to preserve formatting (e.g., <strong>)
+        fragments.push(child.cloneNode(true));
+      });
+      // If only one child, use it directly; else, wrap in a <div>
+      if (fragments.length === 1) {
+        textCell = fragments[0];
+      } else if (fragments.length > 1) {
+        const wrapper = document.createElement('div');
+        fragments.forEach(f => wrapper.appendChild(f));
+        textCell = wrapper;
+      }
+    }
 
-    // Defensive: skip if missing either
-    if (!imgDiv || !bodyDiv) return;
-
-    // The image cell: use the .cards-card-image div directly (contains <picture>)
-    // The text cell: use the .cards-card-body div directly (contains <p><strong>...</strong></p> and <p>description</p>)
-    rows.push([imgDiv, bodyDiv]);
+    rows.push([imageCell, textCell]);
   });
 
-  // Create the table
   const table = WebImporter.DOMUtils.createTable(rows, document);
-
-  // Replace the original element
   element.replaceWith(table);
 }
