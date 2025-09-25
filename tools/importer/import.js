@@ -174,7 +174,7 @@ function transformPage(main, { inventory, ...source }) {
 /**
 * Fragment transformation function
 */
-function transformFragment(main, { fragment, inventory, ...source }) {
+function transformFragment(main, { fragment, inventory, publishUrl, ...source }) {
   const { document, params: { originalURL } } = source;
 
   if (fragment.name === 'nav') {
@@ -200,7 +200,7 @@ function transformFragment(main, { fragment, inventory, ...source }) {
 
     try {
       const headerBlock = headerParser(navEl, {
-        ...source, document, fragment, bodyWidth,
+        ...source, document, fragment, bodyWidth, publishUrl,
       });
       main.append(headerBlock);
     } catch (e) {
@@ -290,7 +290,7 @@ export default {
         return [];
       }
       main = document.createElement('div');
-      transformFragment(main, { ...payload, fragment, inventory });
+      transformFragment(main, { ...payload, fragment, inventory, publishUrl });
       path = fragment.path;
     } else {
       // page transformation
