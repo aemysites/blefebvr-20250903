@@ -32,10 +32,11 @@ const parseDataHlxImpRect = (element) => {
 
 const brandLogoMapping = [
   {
-    checkFn: (e, {publishUrl}) => {
+    checkFn: (e, { publishUrl }) => {
       // Helper function to check if an element is visible
 
-      const links = [...e.querySelectorAll(`a[href="/"], a[href="${window.location.origin}/"], a[href="${publishUrl}/"]`)].filter(isVisible);
+      const links = [...e.querySelectorAll(`a[href="/"], a[href="${window.location.origin}/"], a[href="${publishUrl}/"]`)]
+        .filter(isVisible);
       return links.reduce((topLeftMost, current) => {
         const currentRect = parseDataHlxImpRect(current.closest('div'));
         const topLeftRect = topLeftMost ? parseDataHlxImpRect(topLeftMost.closest('div')) : { y: Infinity, x: Infinity };
@@ -154,7 +155,7 @@ const brandLogoMapping = [
 
 function getBrandLogo(rootEl, document, { bodyWidth, originURL, publishUrl }) {
   const brandEl = document.createElement('div');
-  brandLogoMapping.some((m, index) => {
+  brandLogoMapping.some((m) => {
     const logoEl = m.checkFn(rootEl, { originURL, publishUrl });
     if (logoEl) {
       let x = 0;
@@ -296,7 +297,9 @@ function cleanup(el) {
   return el;
 }
 
-export default function headerParser(el, { document, params, bodyWidth, publishUrl }) {
+export default function headerParser(el, {
+  document, params, bodyWidth, publishUrl,
+}) {
   console.log('headerParser', el, params, bodyWidth);
   const containerEl = document.createElement('div');
 

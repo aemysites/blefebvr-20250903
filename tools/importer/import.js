@@ -11,8 +11,8 @@
  */
 /* global WebImporter */
 /* eslint-disable no-console */
-import cards4Parser from './parsers/cards4.js';
 import columns3Parser from './parsers/columns3.js';
+import cards4Parser from './parsers/cards4.js';
 import hero2Parser from './parsers/hero2.js';
 import headerParser from './parsers/header.js';
 import metadataParser from './parsers/metadata.js';
@@ -30,8 +30,8 @@ import {
 
 const parsers = {
   metadata: metadataParser,
-  cards4: cards4Parser,
   columns3: columns3Parser,
+  cards4: cards4Parser,
   hero2: hero2Parser,
   ...customParsers,
 };
@@ -174,7 +174,9 @@ function transformPage(main, { inventory, ...source }) {
 /**
 * Fragment transformation function
 */
-function transformFragment(main, { fragment, inventory, publishUrl, ...source }) {
+function transformFragment(main, {
+  fragment, inventory, publishUrl, ...source
+}) {
   const { document, params: { originalURL } } = source;
 
   if (fragment.name === 'nav') {
@@ -290,7 +292,9 @@ export default {
         return [];
       }
       main = document.createElement('div');
-      transformFragment(main, { ...payload, fragment, inventory, publishUrl });
+      transformFragment(main, {
+        ...payload, fragment, inventory, publishUrl,
+      });
       path = fragment.path;
     } else {
       // page transformation

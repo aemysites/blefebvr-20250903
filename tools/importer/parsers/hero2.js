@@ -1,48 +1,37 @@
 /* global WebImporter */
 export default function parse(element, { document }) {
-  // Find the deepest content container
-  let mainDiv = element;
-  while (mainDiv && mainDiv.querySelector(':scope > div')) {
-    mainDiv = mainDiv.querySelector(':scope > div');
+  // Find the .hero.block
+  const heroBlock = element.querySelector('.hero.block');
+  if (!heroBlock) return;
+
+  // Find the innermost div containing the actual content
+  let contentDiv = heroBlock;
+  while (contentDiv && contentDiv.children.length === 1 && contentDiv.firstElementChild.tagName === 'DIV') {
+    contentDiv = contentDiv.firstElementChild;
   }
-  if (!mainDiv) return;
 
-  // Find the <picture> element for the background image
-  const picture = mainDiv.querySelector('picture');
+  // Extract the background image (picture)
+  let imageEl = '';
+  const firstPicP = contentDiv.querySelector('p picture');
+  if (firstPicP) {
+    imageEl = firstPicP.closest('p'); // include the <p> for context
+  }
 
-  // Collect all content elements except the <p> containing <picture>
-  // All content (title, subheading, CTA) must be in a single cell (array of elements)
-  const contentElements = [];
-  mainDiv.childNodes.forEach((node) => {
-    if (node.nodeType === 1) { // ELEMENT_NODE
-      // Skip <p> that contains <picture>
-      if (node.tagName === 'P' && node.querySelector('picture')) return;
-      // Include all non-empty elements
-      if (node.textContent && node.textContent.trim() !== '') {
-        contentElements.push(node.cloneNode(true));
-      }
+  // Extract all text content (h1, h2, h3, ... and p) in DOM order, skipping the image <p>
+  const textContent = [];
+  Array.from(contentDiv.children).forEach(child => {
+    if (imageEl && child === imageEl) return; // skip the image row
+    if (/^H[1-6]$/.test(child.tagName) || (child.tagName === 'P' && child.textContent.trim())) {
+      textContent.push(child);
     }
   });
 
-  // Fallback: If no content elements found, try to get all text nodes
-  if (contentElements.length === 0) {
-    Array.from(mainDiv.childNodes).forEach((node) => {
-      if (node.nodeType === 3 && node.textContent.trim() !== '') { // TEXT_NODE
-        const p = document.createElement('p');
-        p.textContent = node.textContent.trim();
-        contentElements.push(p);
-      }
-    });
-  }
-
+  // Always ensure the table has 3 rows (header, image, text), even if some are empty
   const headerRow = ['Hero (hero2)'];
-  const imageRow = [picture ? picture : ''];
-  // The content row must always be a single cell containing all content elements (even if only one)
-  const contentRow = [contentElements.length ? contentElements : ''];
+  const imageRow = [imageEl ? imageEl : ''];
+  const textRow = [textContent.length ? textContent : ''];
 
-  // Always produce 3 rows: header, image, content (even if some are empty)
-  const cells = [headerRow, imageRow, contentRow];
-
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  element.replaceWith(table);
+  const cells = [headerRow, imageRow, textRow];
+  const block = WebImporter.DOMUtils.createTable(cells, document);
+  element.replaceWith(block);
 }
